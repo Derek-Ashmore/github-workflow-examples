@@ -2,14 +2,6 @@ name: Docker Pull Push Example
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: GitHub Environment
-        required: true
-        type: choice
-        options:
-        - LAB
-        default: LAB
 
 jobs:
   image_pull_push:
@@ -24,6 +16,13 @@ jobs:
       - name: Pull Hello World
         run: |
           docker pull hello-world
-          docker tag hello-world ghcr.io/${{ github.repository }}/hello-world
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/${{ github.repository }}/hello-world
+          docker tag hello-world ghcr.io/${{ github.repository_owner }}/hello-world
+      - name: Log in to GHE
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push Hello World
+        run: |
+            docker push ghcr.io/${{ github.repository_owner }}/hello-world
