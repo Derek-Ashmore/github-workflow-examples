@@ -16,7 +16,7 @@ jobs:
       - name: Pull Hello World
         run: |
           docker pull hello-world
-          docker tag hello-world ghcr.io/${{ github.repository_owner }}/hello-world
+          docker tag hello-world ghcr.io/derek-ashmore/hello-world
       - name: Log in to GHE
         uses: docker/login-action@v2
         with:
@@ -25,4 +25,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push Hello World
         run: |
-            docker push ghcr.io/${{ github.repository_owner }}/hello-world
+            docker push ghcr.io/derek-ashmore/hello-world
