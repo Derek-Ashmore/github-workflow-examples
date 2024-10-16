@@ -1,0 +1,29 @@
+name: Docker Pull Push Example
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: GitHub Environment
+        required: true
+        type: choice
+        options:
+        - LAB
+        default: LAB
+
+jobs:
+  image_pull_push:
+    name: Pull and Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+    steps:
+      - name: Pull Hello World
+        run: |
+          docker pull hello-world
+          docker tag hello-world ghcr.io/${{ github.repository }}/hello-world
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push ghcr.io/${{ github.repository }}/hello-world
