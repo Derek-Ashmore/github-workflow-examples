@@ -31,8 +31,8 @@ jobs:
   third-job:
     needs: [first-job, second-job]
     runs-on: ubuntu-latest
-    # This job only runs if no previous jobs were skipped
-    if: ${{ !contains(needs.*.result, 'skipped') }}
+    # This job only runs if all previous jobs completed successfully
+    if: ${{ !contains(needs.*.result, 'skipped') && !contains(needs.*.result, 'failure') }}
     steps:
       - name: Run third job
         run: echo "Running third job"
