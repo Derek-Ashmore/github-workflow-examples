@@ -1,0 +1,38 @@
+name: Skip Test Workflow
+
+on:
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      skip_first:
+        description: 'Skip first job'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  first-job:
+    runs-on: ubuntu-latest
+    # This job can be skipped via workflow_dispatch input
+    if: ${{ !inputs.skip_first }}
+    steps:
+      - name: Run first job
+        run: echo "Running first job"
+
+  second-job:
+    needs: first-job
+    runs-on: ubuntu-latest
+    # This job runs if first-job was successful or skipped
+    if: ${{ success() || contains(needs.*.result, 'skipped') }}
+    steps:
+      - name: Run second job
+        run: echo "Running second job"
+
+  third-job:
+    needs: [first-job, second-job]
+    runs-on: ubuntu-latest
+    # This job only runs if no previous jobs were skipped
+    if: ${{ !contains(needs.*.result, 'skipped') }}
+    steps:
+      - name: Run third job
+        run: echo "Running third job"
