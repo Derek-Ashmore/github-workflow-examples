@@ -1,0 +1,63 @@
+# Converts a Markdown file (with optional Mermaid diagrams) to Microsoft Word (.docx)
+# using Pandoc and the pandoc-mermaid-filter. Input file must be in the docs/ folder.
+
+name: Markdown to Word
+
+on:
+  workflow_dispatch:
+    inputs:
+      markdown_file:
+        description: 'Markdown filename (e.g. readme.md). File must be in the docs/ folder.'
+        required: true
+        type: string
+
+jobs:
+  convert:
+    name: Convert Markdown to Word
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate input file exists
+        run: |
+          INPUT_PATH="docs/${{ inputs.markdown_file }}"
+          if [ ! -f "$INPUT_PATH" ]; then
+            echo "::error::Input file not found: $INPUT_PATH"
+            exit 1
+          fi
+          echo "INPUT_PATH=$INPUT_PATH" >> $GITHUB_ENV
+
+      - name: Install Pandoc
+        uses: r-lib/actions/setup-pandoc@v2
+        with:
+          pandoc-version: 'latest'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Mermaid CLI
+        run: npm install -g @mermaid-js/mermaid-cli
+
+      - name: Install pandoc-mermaid-filter
+        run: pip install pandoc-mermaid-filter
+
+      - name: Convert Markdown to Word
+        env:
+          MERMAID_BIN: mmdc
+        run: |
+          INPUT_PATH="${{ env.INPUT_PATH }}"
+          # Output filename: replace .md/.markdown with .docx
+          BASENAME="${INPUT_PATH%.*}"
+          OUTPUT_NAME=$(basename "$BASENAME").docx
+          pandoc "$INPUT_PATH" -o "$OUTPUT_NAME" --filter pandoc-mermaid
+          echo "OUTPUT_NAME=$OUTPUT_NAME" >> $GITHUB_ENV
+
+      - name: Upload Word document
+        uses: actions/upload-artifact@v4
+        with:
+          name: word-output
+          path: ${{ env.OUTPUT_NAME }}
