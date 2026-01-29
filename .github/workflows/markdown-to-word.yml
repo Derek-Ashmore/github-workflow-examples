@@ -37,7 +37,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Install Mermaid CLI
         run: npm install -g @mermaid-js/mermaid-cli
@@ -45,9 +44,18 @@ jobs:
       - name: Install pandoc-mermaid-filter
         run: pip install pandoc-mermaid-filter
 
+      - name: Setup Mermaid for headless (no sandbox)
+        run: |
+          echo '{"args": ["--no-sandbox", "--disable-setuid-sandbox"]}' > puppeteer-config.json
+          echo '#!/bin/sh' > mmdc-wrapper.sh
+          # Redirect mmdc stdout/stderr so progress msgs (e.g. "Generating single mermaid char")
+          # do not corrupt the pandoc filter JSON stream on stdout.
+          echo 'exec mmdc -p "$(pwd)/puppeteer-config.json" "$@" 1>/dev/null 2>/dev/null' >> mmdc-wrapper.sh
+          chmod +x mmdc-wrapper.sh
+
       - name: Convert Markdown to Word
         env:
-          MERMAID_BIN: mmdc
+          MERMAID_BIN: ./mmdc-wrapper.sh
         run: |
           INPUT_PATH="${{ env.INPUT_PATH }}"
           # Output filename: replace .md/.markdown with .docx
