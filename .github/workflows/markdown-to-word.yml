@@ -48,7 +48,9 @@ jobs:
         run: |
           echo '{"args": ["--no-sandbox", "--disable-setuid-sandbox"]}' > puppeteer-config.json
           echo '#!/bin/sh' > mmdc-wrapper.sh
-          echo 'exec mmdc -p "$(pwd)/puppeteer-config.json" "$@"' >> mmdc-wrapper.sh
+          # Redirect mmdc stdout/stderr so progress msgs (e.g. "Generating single mermaid char")
+          # do not corrupt the pandoc filter JSON stream on stdout.
+          echo 'exec mmdc -p "$(pwd)/puppeteer-config.json" "$@" 1>/dev/null 2>/dev/null' >> mmdc-wrapper.sh
           chmod +x mmdc-wrapper.sh
 
       - name: Convert Markdown to Word
