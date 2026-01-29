@@ -44,9 +44,16 @@ jobs:
       - name: Install pandoc-mermaid-filter
         run: pip install pandoc-mermaid-filter
 
+      - name: Setup Mermaid for headless (no sandbox)
+        run: |
+          echo '{"args": ["--no-sandbox", "--disable-setuid-sandbox"]}' > puppeteer-config.json
+          echo '#!/bin/sh' > mmdc-wrapper.sh
+          echo 'exec mmdc -p "$(pwd)/puppeteer-config.json" "$@"' >> mmdc-wrapper.sh
+          chmod +x mmdc-wrapper.sh
+
       - name: Convert Markdown to Word
         env:
-          MERMAID_BIN: mmdc
+          MERMAID_BIN: ./mmdc-wrapper.sh
         run: |
           INPUT_PATH="${{ env.INPUT_PATH }}"
           # Output filename: replace .md/.markdown with .docx
