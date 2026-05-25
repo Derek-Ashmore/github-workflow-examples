@@ -64,7 +64,8 @@ jobs:
         run: |
           npx ruflo@latest hive-mind spawn "$RUFLO_INSTRUCTION" \
             --queen-type strategic \
-            --verbose
+            --verbose \
+            --claude 
 
       - name: Commit and push changes
         run: |
