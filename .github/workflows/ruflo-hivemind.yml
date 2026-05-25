@@ -1,0 +1,83 @@
+# Reusable workflow: run a RuFlo hive-mind swarm on the caller's repository,
+# then commit and push non-dot-directory changes on the same branch.
+#
+# Callers must pass secrets.ANTHROPIC_API_KEY and grant contents: write.
+# See ruflo-hivemind-example.yml for a local caller sample.
+
+name: RuFlo Hive Mind
+
+on:
+  workflow_call:
+    inputs:
+      instruction:
+        description: Task for the RuFlo queen-led swarm (paths refer to the caller repo)
+        required: true
+        type: string
+    secrets:
+      ANTHROPIC_API_KEY:
+        description: Anthropic API key (caller should map secrets.ANTHROPIC_API_KEY)
+        required: true
+
+jobs:
+  hive-mind:
+    name: RuFlo hive-mind
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      RUFLO_INSTRUCTION: ${{ inputs.instruction }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Configure headless Claude Code
+        run: |
+          mkdir -p "$HOME/bin"
+          CLAUDE_BIN="$(command -v claude)"
+          cat > "$HOME/bin/claude" <<SCRIPT
+          #!/usr/bin/env bash
+          exec "${CLAUDE_BIN}" --permission-mode bypassPermissions "\$@"
+          SCRIPT
+          chmod +x "$HOME/bin/claude"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Run RuFlo hive-mind swarm
+        run: |
+          npx ruflo@latest hive-mind spawn "$RUFLO_INSTRUCTION" \
+            --queen-type strategic \
+            --verbose
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          # Exclude changes under root-level dot directories (include root dot files).
+          while IFS= read -r -d '' path; do
+            if [[ "$path" =~ ^\.[^/]+/ ]]; then
+              git reset -q HEAD -- "$path" || true
+            fi
+          done < <(git diff --cached --name-only -z)
+
+          if git diff --cached --quiet; then
+            echo "No committable changes (clean tree or only excluded paths)."
+            exit 0
+          fi
+
+          SUMMARY="$(printf '%s' "$RUFLO_INSTRUCTION" | head -n1 | cut -c1-72)"
+          git commit -m "ruflo: ${SUMMARY}"
+          git push origin HEAD
