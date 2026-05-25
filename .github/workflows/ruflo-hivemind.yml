@@ -1,4 +1,4 @@
-# Reusable workflow: run a RuFlo hive-mind swarm on the caller's repository,
+# Reusable workflow: initialize RuFlo hive-mind (headless), run a swarm on the caller's repository,
 # then commit and push non-dot-directory changes on the same branch.
 #
 # Callers must pass secrets.ANTHROPIC_API_KEY and grant contents: write.
@@ -28,6 +28,7 @@ jobs:
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       RUFLO_INSTRUCTION: ${{ inputs.instruction }}
+      CLAUDE_FLOW_HEADLESS: "true"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -52,6 +53,12 @@ jobs:
           SCRIPT
           chmod +x "$HOME/bin/claude"
           echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Initialize RuFlo hive-mind
+        run: |
+          npx ruflo@latest hive-mind init \
+            --topology hierarchical-mesh \
+            --consensus byzantine
 
       - name: Run RuFlo hive-mind swarm
         run: |
