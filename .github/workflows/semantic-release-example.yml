@@ -1,0 +1,40 @@
+# Example caller for semantic-release.yml (same repository).
+#
+# Prerequisites:
+#   - GITHUB_TOKEN with contents: write (granted below)
+#
+# Other repos can call:
+#   uses: <owner>/github-workflow-examples/.github/workflows/semantic-release.yml@<ref>
+#   permissions:
+#     contents: write
+#   with:
+#     bump: patch
+
+name: Semantic Release (example caller)
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Version bump type
+        required: false
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      release_notes:
+        description: Optional release notes (leave empty to auto-generate)
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  release:
+    uses: ./.github/workflows/semantic-release.yml
+    permissions:
+      contents: write
+    with:
+      bump: ${{ inputs.bump }}
+      release_notes: ${{ inputs.release_notes }}
