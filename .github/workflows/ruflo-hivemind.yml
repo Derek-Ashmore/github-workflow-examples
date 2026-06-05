@@ -13,6 +13,11 @@ on:
         description: Task for the RuFlo queen-led swarm (paths refer to the caller repo)
         required: true
         type: string
+      ruflo_version:
+        description: Version of RuFlo to use
+        required: false
+        type: string
+        default: "3.5.80"
     secrets:
       ANTHROPIC_API_KEY:
         description: Anthropic API key (caller should map secrets.ANTHROPIC_API_KEY)
@@ -56,16 +61,71 @@ jobs:
 
       - name: Initialize RuFlo hive-mind
         run: |
-          npx ruflo@latest hive-mind init \
+          stdout_file="$(mktemp)"
+          stderr_file="$(mktemp)"
+          trap 'rm -f "$stdout_file" "$stderr_file"' EXIT
+
+          set +e
+          npx ruflo@${{ inputs.ruflo_version }} hive-mind init \
             --topology hierarchical-mesh \
-            --consensus byzantine
+            --consensus byzantine \
+            > "$stdout_file" 2> "$stderr_file"
+          exit_code=$?
+          set -e
+
+          cat "$stdout_file"
+          cat "$stderr_file" >&2
+
+          {
+            echo "## Initialize RuFlo hive-mind"
+            echo ""
+            echo "### Standard output"
+            echo '```'
+            cat "$stdout_file"
+            echo '```'
+            echo ""
+            echo "### Standard error"
+            echo '```'
+            cat "$stderr_file"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$exit_code"
 
       - name: Run RuFlo hive-mind swarm
         run: |
-          npx ruflo@latest hive-mind spawn "$RUFLO_INSTRUCTION" \
+          stdout_file="$(mktemp)"
+          stderr_file="$(mktemp)"
+          trap 'rm -f "$stdout_file" "$stderr_file"' EXIT
+
+          set +e
+          npx ruflo@${{ inputs.ruflo_version }} hive-mind spawn "$RUFLO_INSTRUCTION" \
             --queen-type strategic \
             --verbose \
-            --claude 
+            --claude \
+            --non-interactive \
+            > "$stdout_file" 2> "$stderr_file"
+          exit_code=$?
+          set -e
+
+          cat "$stdout_file"
+          cat "$stderr_file" >&2
+
+          {
+            echo "## Run RuFlo hive-mind swarm"
+            echo ""
+            echo "### Standard output"
+            echo '```'
+            cat "$stdout_file"
+            echo '```'
+            echo ""
+            echo "### Standard error"
+            echo '```'
+            cat "$stderr_file"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$exit_code"
 
       - name: Commit and push changes
         run: |
