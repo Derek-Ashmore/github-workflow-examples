@@ -23,12 +23,15 @@ on:
         type: string
         default: "Review this repository and suggest one small documentation improvement."
       model:
-        description: OpenRouter model for primary tiers
+        description: OpenRouter model slug for primary (Opus/Sonnet) tiers
         required: false
-        type: choice
-        options:
-          - deepseek/deepseek-chat
-        default: deepseek/deepseek-chat
+        type: string
+        default: "deepseek/deepseek-v4-pro"
+      fast_model:
+        description: OpenRouter model slug for secondary (Haiku/subagent) tiers
+        required: false
+        type: string
+        default: "deepseek/deepseek-v4-flash"
 
 jobs:
   ruflo:
@@ -40,3 +43,4 @@ jobs:
     with:
       instruction: ${{ inputs.instruction }}
       model: ${{ inputs.model }}
+      fast_model: ${{ inputs.fast_model }}

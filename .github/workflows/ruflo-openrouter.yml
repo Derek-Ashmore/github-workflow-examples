@@ -23,7 +23,12 @@ on:
         description: OpenRouter model slug for primary (Opus/Sonnet) tiers
         required: false
         type: string
-        default: "deepseek/deepseek-chat"
+        default: "deepseek/deepseek-v4-pro"
+      fast_model:
+        description: OpenRouter model slug for secondary (Haiku/subagent) tiers
+        required: false
+        type: string
+        default: "deepseek/deepseek-v4-flash"
     secrets:
       OPENROUTER_API_KEY:
         description: OpenRouter API key
@@ -44,8 +49,8 @@ jobs:
       ANTHROPIC_MODEL: ${{ inputs.model }}
       ANTHROPIC_DEFAULT_OPUS_MODEL: ${{ inputs.model }}
       ANTHROPIC_DEFAULT_SONNET_MODEL: ${{ inputs.model }}
-      ANTHROPIC_DEFAULT_HAIKU_MODEL: "deepseek/deepseek-flash"
-      CLAUDE_CODE_SUBAGENT_MODEL: "deepseek/deepseek-flash"
+      ANTHROPIC_DEFAULT_HAIKU_MODEL: ${{ inputs.fast_model }}
+      CLAUDE_CODE_SUBAGENT_MODEL: ${{ inputs.fast_model }}
       CLAUDE_CODE_SKIP_FAST_MODE_ORG_CHECK: "1"
       RUFLO_INSTRUCTION: ${{ inputs.instruction }}
       CLAUDE_FLOW_HEADLESS: "true"
