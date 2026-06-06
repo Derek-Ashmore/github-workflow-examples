@@ -68,14 +68,6 @@ jobs:
             missing+=("instruction (workflow input)")
           fi
 
-          case "${ANTHROPIC_MODEL:-}" in
-            deepseek/deepseek-chat) ;;
-            *)
-              echo "::error title=Unsupported model::Only deepseek/deepseek-chat is supported at this time (got: ${ANTHROPIC_MODEL:-<empty>})."
-              exit 1
-              ;;
-          esac
-
           if [[ ${#missing[@]} -gt 0 ]]; then
             echo "::error title=Missing required configuration::The following required secrets or inputs were not provided or are empty:"
             for item in "${missing[@]}"; do

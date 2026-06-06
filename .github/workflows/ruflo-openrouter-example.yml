@@ -21,7 +21,7 @@ on:
         description: Task for the RuFlo agent team
         required: true
         type: string
-        default: "Review this repository and suggest one small documentation improvement."
+        default: "Review this repository and suggest one small documentation improvement in file notes/improvement_suggestion.md"
       model:
         description: OpenRouter model slug for primary (Opus/Sonnet) tiers
         required: false
