@@ -35,6 +35,29 @@ jobs:
       RUFLO_INSTRUCTION: ${{ inputs.instruction }}
       CLAUDE_FLOW_HEADLESS: "true"
     steps:
+      - name: Validate required secrets and inputs
+        run: |
+          set -euo pipefail
+          missing=()
+
+          if [[ -z "${ANTHROPIC_API_KEY:-}" ]]; then
+            missing+=("ANTHROPIC_API_KEY")
+          fi
+
+          if [[ -z "${RUFLO_INSTRUCTION:-}" ]]; then
+            missing+=("instruction (workflow input)")
+          fi
+
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error title=Missing required configuration::The following required secrets or inputs were not provided or are empty:"
+            for item in "${missing[@]}"; do
+              echo "::error::$item"
+            done
+            exit 1
+          fi
+
+          echo "Required secrets and inputs are present."
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
