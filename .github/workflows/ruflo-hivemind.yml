@@ -59,6 +59,37 @@ jobs:
           chmod +x "$HOME/bin/claude"
           echo "$HOME/bin" >> "$GITHUB_PATH"
 
+      - name: Initialize RuFlo
+        run: |
+          stdout_file="$(mktemp)"
+          stderr_file="$(mktemp)"
+          trap 'rm -f "$stdout_file" "$stderr_file"' EXIT
+
+          set +e
+          npx ruflo@${{ inputs.ruflo_version }} init \
+            > "$stdout_file" 2> "$stderr_file"
+          exit_code=$?
+          set -e
+
+          cat "$stdout_file"
+          cat "$stderr_file" >&2
+
+          {
+            echo "## Initialize RuFlo"
+            echo ""
+            echo "### Standard output"
+            echo '```'
+            cat "$stdout_file"
+            echo '```'
+            echo ""
+            echo "### Standard error"
+            echo '```'
+            cat "$stderr_file"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$exit_code"
+
       - name: Initialize RuFlo hive-mind
         run: |
           stdout_file="$(mktemp)"
