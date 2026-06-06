@@ -1,5 +1,5 @@
 # Reusable workflow: initialize RuFlo hive-mind (headless), run a swarm on the caller's repository,
-# then commit and push non-dot-directory changes on the same branch.
+# then commit and push changes on the same branch (excluding dot directories, .mcp.json, Claude.md).
 #
 # Callers must pass secrets.ANTHROPIC_API_KEY and grant contents: write.
 # See ruflo-hivemind-example.yml for a local caller sample.
@@ -165,7 +165,10 @@ jobs:
 
           git add -A
 
-          # Exclude changes under root-level dot directories (include root dot files).
+          # Exclude specific files and changes under root-level dot directories.
+          for path in .mcp.json Claude.md; do
+            git reset -q HEAD -- "$path" 2>/dev/null || true
+          done
           while IFS= read -r -d '' path; do
             if [[ "$path" =~ ^\.[^/]+/ ]]; then
               git reset -q HEAD -- "$path" || true
