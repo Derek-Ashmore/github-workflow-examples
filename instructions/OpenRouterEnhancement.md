@@ -7,7 +7,7 @@ Detailed requirements are:
 - Like the workflow ruflo-hivemind.yml, note output from the various RuFlo steps in the workflow execution summary.
 - Like the workflow ruflo-hivemind.yml, accept an instruction and RuFlo version as input. 
 - Document any questions you have for me in file notes/openrouter_questions_v1.md
-- Document your thinking in file notes/openrouter_questions_v1.md
+- Document your thinking in file notes/openrouter_thinking_v1.md
 
 ## DeepSeek override instructions
 
