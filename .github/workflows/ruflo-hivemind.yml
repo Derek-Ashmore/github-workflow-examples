@@ -18,6 +18,16 @@ on:
         required: false
         type: string
         default: "3.5.80"
+      model:
+        description: Anthropic model slug for primary (Opus/Sonnet) tiers
+        required: false
+        type: string
+        default: "claude-sonnet-4-6"
+      fast_model:
+        description: Anthropic model slug for secondary (Haiku/subagent) tiers
+        required: false
+        type: string
+        default: "claude-haiku-4-5"
     secrets:
       ANTHROPIC_API_KEY:
         description: Anthropic API key (caller should map secrets.ANTHROPIC_API_KEY)
@@ -32,6 +42,11 @@ jobs:
       contents: write
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      ANTHROPIC_MODEL: ${{ inputs.model }}
+      ANTHROPIC_DEFAULT_OPUS_MODEL: ${{ inputs.model }}
+      ANTHROPIC_DEFAULT_SONNET_MODEL: ${{ inputs.model }}
+      ANTHROPIC_DEFAULT_HAIKU_MODEL: ${{ inputs.fast_model }}
+      CLAUDE_CODE_SUBAGENT_MODEL: ${{ inputs.fast_model }}
       RUFLO_INSTRUCTION: ${{ inputs.instruction }}
       CLAUDE_FLOW_HEADLESS: "true"
     steps:
@@ -57,6 +72,8 @@ jobs:
           fi
 
           echo "Required secrets and inputs are present."
+          echo "Primary model: ${ANTHROPIC_MODEL}"
+          echo "Fast model: ${ANTHROPIC_DEFAULT_HAIKU_MODEL}"
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -167,6 +184,9 @@ jobs:
 
           {
             echo "## Run RuFlo hive-mind swarm"
+            echo ""
+            echo "Primary model: \`${ANTHROPIC_MODEL}\`"
+            echo "Fast model: \`${ANTHROPIC_DEFAULT_HAIKU_MODEL}\`"
             echo ""
             echo "### Standard output"
             echo '```'

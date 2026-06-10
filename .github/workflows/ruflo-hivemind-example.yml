@@ -10,6 +10,7 @@
 #     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 #   with:
 #     instruction: "..."
+#     model: "claude-sonnet-4-20250514"
 
 name: RuFlo Hive Mind (example caller)
 
@@ -21,6 +22,16 @@ on:
         required: true
         type: string
         default: "Review this repository and suggest one small documentation improvement."
+      model:
+        description: Anthropic model slug for primary (Opus/Sonnet) tiers
+        required: false
+        type: string
+        default: "claude-sonnet-4-6"
+      fast_model:
+        description: Anthropic model slug for secondary (Haiku/subagent) tiers
+        required: false
+        type: string
+        default: "claude-haiku-4-5"
 
 jobs:
   ruflo:
@@ -31,3 +42,5 @@ jobs:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
     with:
       instruction: ${{ inputs.instruction }}
+      model: ${{ inputs.model }}
+      fast_model: ${{ inputs.fast_model }}
